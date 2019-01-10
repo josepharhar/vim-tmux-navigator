@@ -70,7 +70,7 @@ if has('nvim')
 else
   function! s:TmuxCommand(args)
     " Vim does not support a list for `system()`.
-    let cmd = join(map(s:GetTmuxCommand(a:args), 'fnameescape(v:val)'))
+    let cmd = join(s:GetTmuxCommand(a:args))
     return substitute(system(cmd), '\n$', '', '')
   endfunction
 endif
@@ -153,6 +153,10 @@ command! TmuxNavigatorPaneIndicator echo s:get_indicator()
 function! s:remove_indicator() abort
   let cur = s:get_indicator()
   " Remove indicators globally (especially important with nested Vim in :term).
+  if !has('nvim')
+    " Shellescape new string, in case it's empty
+    let new = shellescape(new)
+  endif
   let new = substitute(cur, '-'.$TMUX_PANE.'-', '', 'g')
   call s:TmuxCommand(['set', '@tmux_navigator', new])
 endfunction
